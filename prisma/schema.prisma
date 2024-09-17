@@ -1,0 +1,90 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id                   String                 @id @default(uuid()) @map("_id") @db.Uuid
+  name                 String
+  email                String                 @unique
+  password             String
+  appearanceSettings   AppearanceSettings?    @relation(name: "AppearanceSettingsToUser")
+  appTheme             AppTheme?              @relation(name: "AppThemeToUser")
+  bottomPanelSettings  BottomPanelSettings[]
+  pages                Page[]
+}
+
+model AppearanceSettings {
+  id                   Int      @id @default(autoincrement())
+  userId               String   @map("user_id") @unique @db.Uuid
+  headerColor          String
+  headerTextColor      String
+  hideHeader           Boolean
+  backgroundColor      String
+  backgroundImage      String?
+  enableSearch         Boolean
+
+  user                 User     @relation(name: "AppearanceSettingsToUser", fields: [userId], references: [id])
+}
+
+model AppTheme {
+  id                   Int      @id @default(autoincrement())
+  userId               String   @map("user_id") @unique @db.Uuid
+  appHeaderColor       String
+  appHeaderTextColor   String
+  isAppHeader          Boolean
+  appBackgroundColor   String
+  appBackgroundImage   String?
+  isAppSearch          Boolean
+
+  user                 User     @relation(name: "AppThemeToUser", fields: [userId], references: [id])
+}
+
+model BottomPanelSettings {
+  id                   Int      @id @default(autoincrement())
+  userId               String   @map("user_id") @unique @db.Uuid
+  hidePanel            Boolean
+  panelColor           String
+  iconAndTextColor     String
+  buttons              Button[]
+
+  user                 User     @relation(fields: [userId], references: [id])
+}
+
+model Page {
+  id                   Int      @id @default(autoincrement())
+  userId               String   @map("user_id") @db.Uuid
+  title                String
+  showTitle            Boolean
+  showInMenu           Boolean
+  blocks               Block[]
+
+  user                 User     @relation(fields: [userId], references: [id])
+}
+
+model Button {
+  id                   Int      @id @default(autoincrement())
+  bottomPanelId        Int      @map("bottom_panel_id")
+  type                 String
+  label                String
+  phoneNumber          String?
+  customAction         String?
+
+  bottomPanelSettings  BottomPanelSettings @relation(fields: [bottomPanelId], references: [id])
+}
+
+model Block {
+  id                   Int      @id @default(autoincrement())
+  pageId               Int      @map("page_id")
+  blockId              Int
+  label                String
+  imageUrl             String?
+  redirectUrl          String?
+
+  page                 Page     @relation(fields: [pageId], references: [id])
+}
+
